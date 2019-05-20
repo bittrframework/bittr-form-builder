@@ -1,0 +1,21 @@
+{
+  "name": "bittrframework/bittr-form-builder",
+  "description": "Generates a HTML5 form markup.",
+  "type": "library",
+  "keywords" : ["form", "form maker", "php html form", "php form", "php form schema", "form schema", "form builder"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Bittr Framework",
+      "email": "info@bittrframework.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.1"
+  },
+  "autoload": {
+    "classmap": [
+      "src/Form.php"
+    ]
+  }
+}
