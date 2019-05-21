@@ -120,9 +120,9 @@ class Form
      * @param bool   $label
      * @return Form
      */
-    public function hidden(string $name, array $attr = [], bool $label = true): Form
+    public function hidden(string $name, array $attr = []): Form
     {
-        $this->buffer[] = $attr + ['name' => $name, 'type' => 'hidden', 'l' => $label];
+        $this->buffer[] = $attr + ['name' => $name, 'type' => 'hidden'];
 
         return $this;
     }
