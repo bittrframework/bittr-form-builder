@@ -26,7 +26,7 @@ echo (new Form('index.php'))
     ->persistWith($_POST) // data to repopulate
     ->shortTags(['pl' => 'placeholder']) // replace all pl in element attribute as placeholder
     ->checkbox($name, $attributes_arr, $label)
-    ->hidden($name, $attributes_arr, $label)
+    ->hidden($name, $attributes_arr)
     ->email($name, $attributes_arr, $label)->val('foo@bar.com')
     ->password($name, $attributes_arr, $label)
     ->text($name, $attributes_arr, $label)
@@ -50,5 +50,5 @@ echo (new Form('index.php'))
     ->textarea($name, $attributes_arr, $label)
     ->output($name, $attributes_arr, $label)
     ->label('custom', 'your custom input')
-    ->progress($value, $max_val)
-    ->bSubmit($name, "Submit");
+    ->progress($value, $max_val)->move('email')
+    ->bSubmit("Submit");
