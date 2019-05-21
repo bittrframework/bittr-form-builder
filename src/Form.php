@@ -120,7 +120,7 @@ class Form
      * @param bool   $label
      * @return Form
      */
-    public function hidden(string $name, array $attr = []): Form
+    public function hidden(string $name, array $attr = [], bool $label = true): Form
     {
         $this->buffer[] = $attr + ['name' => $name, 'type' => 'hidden'];
 
@@ -160,13 +160,14 @@ class Form
     /**
      * Creates an input field of type submit.
      *
-     * @param string $name
-     * @param array  $attr
+     * @param string      $value
+     * @param string|null $name
+     * @param array       $attr
      * @return Form
      */
-    public function submit(string $name, array $attr = []): Form
+    public function submit(string $value, string $name = null, array $attr = []): Form
     {
-        $this->buffer[] = $attr + ['name' => $name, 'type' => 'submit'];
+        $this->buffer[] = $attr + ['name' => $name, 'type' => 'submit', 'value' => $value];
 
         return $this;
     }
@@ -189,13 +190,14 @@ class Form
     /**
      * Creates an input field of type button.
      *
-     * @param string $name
-     * @param array  $attr
+     * @param string      $value
+     * @param string|null $name
+     * @param array       $attr
      * @return Form
      */
-    public function button(string $name, array $attr = []): Form
+    public function button(string $value, string $name = null, array $attr = []): Form
     {
-        $this->buffer[] = $attr + ['name' => $name, 'type' => 'button'];
+        $this->buffer[] = $attr + ['name' => $name, 'type' => 'button', 'value' => $value];
 
         return $this;
     }
@@ -308,7 +310,7 @@ class Form
     public function datalist(string $name, array $options, array $attr = [], bool $label = true): Form
     {
         $this->buffer[] = $attr + ['name' => $name, 'list' => $name, 'l' => $label];
-        $this->buffer[] = ['id' => $name, 'tag' => 'datalist', 'options' => [$options, null, []]];
+        $this->buffer[] = ['id' => $name, 'tag' => 'datalist', 'options' => [$options, null, [], false]];
 
         return $this;
     }
@@ -455,7 +457,13 @@ class Form
      * @param bool   $label
      * @return Form
      */
-    public function select(string $name, array $options, array $attr = [], bool $label = true): Form
+    public function select(
+        string $name,
+        array $options,
+        array $attr = [],
+        bool $label = true,
+        bool $use_key_as_value = false
+    ): Form
     {
         $selected = null;
         $disabled = [];
@@ -472,11 +480,11 @@ class Form
         }
 
         $this->buffer[] = $attr + [
-                'name'    => $name,
-                'tag'     => 'select',
-                'options' => [$options, $selected, $disabled],
-                'l'       => $label
-            ];
+            'name'    => $name,
+            'tag'     => 'select',
+            'options' => [$options, $selected, $disabled, $use_key_as_value],
+            'l'       => $label
+        ];
 
         return $this;
     }
@@ -484,12 +492,12 @@ class Form
     /**
      * Creates a button field of type button
      *
-     * @param string      $name
-     * @param string|null $content
+     * @param string      $content
+     * @param string|null $name
      * @param array       $attr
      * @return Form
      */
-    public function bButton(string $name, string $content = null, array $attr = []): Form
+    public function bButton(string $content, string $name = null, array $attr = []): Form
     {
         $this->buffer[] = $attr + ['name' => $name, 'type' => 'button', 'content' => $content, 'tag' => 'button'];
 
@@ -513,12 +521,12 @@ class Form
     /**
      * Creates a button field of type button.
      *
-     * @param string      $name
-     * @param string|null $content
+     * @param string      $content
+     * @param string|null $name
      * @param array       $attr
      * @return Form
      */
-    public function bSubmit(string $name, string $content = null, array $attr = []): Form
+    public function bSubmit(string $content, string $name = null, array $attr = []): Form
     {
         $this->buffer[] = $attr + ['name' => $name, 'type' => 'submit', 'content' => $content, 'tag' => 'button'];
 
@@ -652,24 +660,20 @@ class Form
         return $this;
     }
 
-    /*
-    * make defined selected option attribute
-    * from array or string
-    *
-    * @return string
-    */
     /**
-     * @param array       $options
-     * @param string|null $selected
-     * @param array       $disabled
+     * Make defined selected option attribute from array.
+     *
+     * @param array $params
      * @return string
      */
-    private function makeOpt(array $options, $selected = null, array $disabled = []): string
+    private function makeOpt(array $params): string
     {
+        [$options, $selected, $disabled, $key_as_value] = $params;
         $attr = '';
+
         foreach ($options as $val => $cont)
         {
-            if (is_int($val))
+            if (is_int($val) && ! $key_as_value)
             {
                 $val = $cont;
             }
@@ -771,7 +775,7 @@ class Form
 
         foreach ($this->buffer as $el)
         {
-            if ( ! empty($el['l']))
+            if (! empty($el['l']))
             {
                 unset($el['l']);
                 $name = str_replace(['[', ']'], '', $el['name']);
@@ -779,7 +783,7 @@ class Form
                 $form .= "<label>{$label}</label>";
             }
 
-            if ( ! isset($el['tag']))
+            if (! isset($el['tag']))
             {
                 $form .= "<input{$this->makeAttr($el)}/>\n";
             }
@@ -788,7 +792,7 @@ class Form
                 $opts = $el['options'];
                 $tag = $el['tag'];
                 unset($el['tag'], $el['options']);
-                $form .= "<{$tag}{$this->makeAttr($el)}>{$this->makeOpt($opts[0], $opts[1], $opts[2])}</{$tag}>\n";
+                $form .= "<{$tag}{$this->makeAttr($el)}>{$this->makeOpt($opts)}</{$tag}>\n";
             }
             elseif (isset($el['content']))
             {
