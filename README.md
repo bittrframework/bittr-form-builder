@@ -1,3 +1,3 @@
 ```bash
-composer require bittrframework/bittr-option
+composer require bittrframework/bittr-form-builder
 ```
