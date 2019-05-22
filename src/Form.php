@@ -7,7 +7,7 @@
  *
  * New BSD License
  *
- * Copyright (c) 2017, ghostff community
+ * Copyright (c) 2017, bittrframework community
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -19,15 +19,15 @@
  *      documentation and/or other materials provided with the distribution.
  *      3. All advertising materials mentioning features or use of this software
  *      must display the following acknowledgement:
- *      This product includes software developed by the ghostff.
- *      4. Neither the name of the ghostff nor the
+ *      This product includes software developed by the bittrframework.
+ *      4. Neither the name of the bittrframework nor the
  *      names of its contributors may be used to endorse or promote products
  *      derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY ghostff ''AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY bittrframework ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL GHOSTFF COMMUNITY BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL BITTRF COMMUNITY BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -38,6 +38,8 @@
  */
 
 declare(strict_types=1);
+
+namespace Bittr;
 
 class Form
 {
@@ -480,11 +482,11 @@ class Form
         }
 
         $this->buffer[] = $attr + [
-            'name'    => $name,
-            'tag'     => 'select',
-            'options' => [$options, $selected, $disabled, $use_key_as_value],
-            'l'       => $label
-        ];
+                'name'    => $name,
+                'tag'     => 'select',
+                'options' => [$options, $selected, $disabled, $use_key_as_value],
+                'l'       => $label
+            ];
 
         return $this;
     }
