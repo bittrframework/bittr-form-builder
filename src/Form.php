@@ -794,7 +794,12 @@ class Form
                 $opts = $el['options'];
                 $tag = $el['tag'];
                 unset($el['tag'], $el['options']);
-                $form .= "<{$tag}{$this->makeAttr($el)}>{$this->makeOpt($opts)}</{$tag}>\n";
+                if (isset($el['name']) && ! $this->val && isset($this->post[$el['name']]))
+                {
+                    $opts[1] = $this->post[$el['name']];
+                }
+                
+                $form .= "<{$tag}{$this->makeAttr($el, false)}>{$this->makeOpt($opts)}</{$tag}>\n";
             }
             elseif (isset($el['content']))
             {
