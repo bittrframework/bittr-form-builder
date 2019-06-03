@@ -118,7 +118,7 @@ class Form
 
         if ($content)
         {
-            $this->buffer[] = $attr + ['content' => $content, 'tag' => 'label', 'for' => null];
+            $this->buffer[] = ['content' => $content, 'tag' => 'label'];
         }
 
         return $this;
@@ -361,7 +361,7 @@ class Form
 
         if ($content)
         {
-            $this->buffer[] = $attr + ['content' => $content, 'tag' => 'label', 'for' => null];
+            $this->buffer[] = ['content' => $content, 'tag' => 'label'];
         }
 
 
