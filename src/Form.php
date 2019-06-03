@@ -103,13 +103,14 @@ class Form
      * Creates an input field of type checkbox.
      *
      * @param string $name
+     * @param string $content
      * @param array  $attr
-     * @param bool   $label
      * @return Form
      */
-    public function checkbox(string $name, array $attr = [], bool $label = true): Form
+    public function checkbox(string $name, string $content, array $attr = []): Form
     {
-        $this->buffer[] = $attr + ['name' => $name, 'type' => 'checkbox', 'l' => $label];
+        $this->buffer[] = $attr + ['name' => $name, 'type' => 'checkbox'];
+        $this->buffer[] = $attr + ['content' => $content, 'tag' => 'label', 'for' => null];
 
         return $this;
     }
@@ -336,13 +337,15 @@ class Form
      * Creates an input field of type radio.
      *
      * @param string $name
+     * @param string $content
      * @param array  $attr
-     * @param bool   $label
      * @return Form
      */
-    public function radio(string $name, array $attr = [], bool $label = true): Form
+    public function radio(string $name, string $content, array $attr = []): Form
     {
-        $this->buffer[] = $attr + ['name' => $name, 'type' => 'radio', 'l' => $label];;
+        $this->buffer[] = $attr + ['name' => $name, 'type' => 'radio'];
+        $this->buffer[] = $attr + ['content' => $content, 'tag' => 'label', 'for' => null];
+
 
         return $this;
     }
@@ -798,7 +801,7 @@ class Form
                 {
                     $opts[1] = $this->post[$el['name']];
                 }
-                
+
                 $form .= "<{$tag}{$this->makeAttr($el, false)}>{$this->makeOpt($opts)}</{$tag}>\n";
             }
             elseif (isset($el['content']))

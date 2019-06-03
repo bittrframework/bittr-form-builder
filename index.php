@@ -1,4 +1,7 @@
 <?php
+
+use Bittr\Form;
+
 require 'src/Form.php';
 
 $name = 'rand';
@@ -25,7 +28,7 @@ $label    = true; // show label.
 echo (new Form('index.php'))
     ->persistWith($_POST) // data to repopulate
     ->shortTags(['pl' => 'placeholder']) // replace all pl in element attribute as placeholder
-    ->checkbox($name, $attributes_arr, $label)
+    ->checkbox($name, 'Check', $attributes_arr)
     ->hidden($name, $attributes_arr)
     ->email($name, $attributes_arr, $label)->val('foo@bar.com')
     ->password($name, $attributes_arr, $label)
@@ -37,7 +40,7 @@ echo (new Form('index.php'))
     ->image($name, $source, $attributes_arr, $label)
     ->month($name, $attributes_arr, $label)
     ->number($name, $attributes_arr, $label)
-    ->radio($name, $attributes_arr, $label)
+    ->radio($name, 'Click', $attributes_arr)
     ->range($name, $attributes_arr, $label)
     ->reset($attributes_arr)
     ->search($name, $attributes_arr, $label)
