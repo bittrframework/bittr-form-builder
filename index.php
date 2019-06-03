@@ -53,5 +53,7 @@ echo (new Form('index.php'))
     ->textarea($name, $attributes_arr, $label)
     ->output($name, $attributes_arr, $label)
     ->label('custom', 'your custom input')
+    ->text('remove')
     ->progress($value, $max_val)->move('email')
+    ->remove('remove')
     ->bSubmit("Submit");

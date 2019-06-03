@@ -793,22 +793,54 @@ class Form
     }
 
     /**
-     * Moves last added element to befor specified element name.
+     * Moves last added element before specified element name.
      *
-     * @param string $before
-     * @return \Form
+     * @param string   $before
+     * @param int|null $index
+     * @return \Bittr\Form
      */
-    public function move(string $before): Form
+    public function move(string $before = null, int $index = null): Form
     {
-        foreach ($this->buffer as $index => $el)
+        if (! $index)
         {
-            if (isset($el['name']) && $el['name'] == $before)
+            foreach ($this->buffer as $i => $el)
             {
-                $last = array_pop($this->buffer);
-                array_splice($this->buffer, $index, 0, [$last]);
-                break;
+                if (isset($el['name']) && $el['name'] == $before)
+                {
+                    $index = $i;
+                    break;
+                }
             }
         }
+
+        $last = array_pop($this->buffer);
+        array_splice($this->buffer, $index, 0, [$last]);
+
+        return $this;
+    }
+
+    /**
+     * Remove specified element name buffer.
+     *
+     * @param string   $name
+     * @param int|null $index
+     * @return \Bittr\Form
+     */
+    public function remove(string $name = null, int $index = null): Form
+    {
+        if (! $index)
+        {
+            foreach ($this->buffer as $i => $el)
+            {
+                if (isset($el['name']) && $el['name'] == $name)
+                {
+                    $index = $i;
+                    break;
+                }
+            }
+        }
+
+        unset($this->buffer[$index]);
 
         return $this;
     }
