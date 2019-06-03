@@ -103,14 +103,23 @@ class Form
      * Creates an input field of type checkbox.
      *
      * @param string $name
-     * @param string $content
      * @param array  $attr
+     * @param string $content
      * @return Form
      */
-    public function checkbox(string $name, string $content, array $attr = []): Form
+    public function checkbox(string $name, array $attr = [], string $content = null): Form
     {
         $this->buffer[] = $attr + ['name' => $name, 'type' => 'checkbox'];
-        $this->buffer[] = $attr + ['content' => $content, 'tag' => 'label', 'for' => null];
+
+        if (! $content && isset($attr['value']))
+        {
+            $content = $attr['value'];
+        }
+
+        if ($content)
+        {
+            $this->buffer[] = $attr + ['content' => $content, 'tag' => 'label', 'for' => null];
+        }
 
         return $this;
     }
@@ -341,10 +350,19 @@ class Form
      * @param array  $attr
      * @return Form
      */
-    public function radio(string $name, string $content, array $attr = []): Form
+    public function radio(string $name, array $attr = [], string $content = null): Form
     {
         $this->buffer[] = $attr + ['name' => $name, 'type' => 'radio'];
-        $this->buffer[] = $attr + ['content' => $content, 'tag' => 'label', 'for' => null];
+
+        if (! $content && isset($attr['value']))
+        {
+            $content = $attr['value'];
+        }
+
+        if ($content)
+        {
+            $this->buffer[] = $attr + ['content' => $content, 'tag' => 'label', 'for' => null];
+        }
 
 
         return $this;
@@ -714,7 +732,32 @@ class Form
             $name = $attributes['name'];
             if (isset($this->post[$name]))
             {
-                $attributes['value'] = $this->post[$name];
+                $value = $this->post[$name];
+                if ($attributes['type'] == 'radio')
+                {
+                    if ($value == $attributes['value'])
+                    {
+                        $attributes['checked'] = 'checked';
+                    }
+                }
+                elseif ($attributes['type'] == 'checkbox')
+                {
+                    if (is_array($value))
+                    {
+                        // Process array
+                    }
+                    else
+                    {
+                        if ($value == $attributes['value'])
+                        {
+                            $attributes['checked'] = 'checked';
+                        }
+                    }
+                }
+                else
+                {
+                    $attributes['value'] = $value;
+                }
             }
         }
 
@@ -824,7 +867,7 @@ class Form
             {
                 $tag = $el['tag'];
                 unset($el['tag']);
-                $form .= "<{$tag}{$this->makeAttr($el)} /}>\n";
+                $form .= "<{$tag}{$this->makeAttr($el)} />\n";
             }
         }
 
