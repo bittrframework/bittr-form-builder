@@ -828,19 +828,19 @@ class Form
      */
     public function remove(string $name = null, int $index = null): Form
     {
-        if (! $index)
+        if ($index)
         {
-            foreach ($this->buffer as $i => $el)
-            {
-                if (isset($el['name']) && $el['name'] == $name)
-                {
-                    $index = $i;
-                    break;
-                }
-            }
+            unset($this->buffer[$index]);
+            return $this;
         }
 
-        unset($this->buffer[$index]);
+        foreach ($this->buffer as $i => $el)
+        {
+            if (isset($el['name']) && $el['name'] == $name)
+            {
+                unset($this->buffer[$i]);
+            }
+        }
 
         return $this;
     }
