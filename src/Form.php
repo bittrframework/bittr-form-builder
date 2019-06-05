@@ -733,14 +733,15 @@ class Form
             if (isset($this->post[$name]))
             {
                 $value = $this->post[$name];
-                if ($attributes['type'] == 'radio')
+                $typed = isset($attributes['type']);
+                if ($typed && $attributes['type'] == 'radio')
                 {
                     if ($value == $attributes['value'])
                     {
                         $attributes['checked'] = 'checked';
                     }
                 }
-                elseif ($attributes['type'] == 'checkbox')
+                elseif ($typed && $attributes['type'] == 'checkbox')
                 {
                     if (is_array($value))
                     {
