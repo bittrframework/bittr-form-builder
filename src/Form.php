@@ -41,6 +41,10 @@ declare(strict_types=1);
 
 namespace Bittr;
 
+use Closure;
+use Exception;
+use Throwable;
+
 class Form
 {
     /** @var array */
@@ -90,7 +94,7 @@ class Form
      * Set behaviour attributes.
      *
      * @param array $persist_value
-     * @return \Form
+     * @return Form
      */
     public function persistWith(array $persist_value): Form
     {
@@ -317,7 +321,7 @@ class Form
      * @param array  $options
      * @param array  $attr
      * @param bool   $label
-     * @return \Form
+     * @return Form
      */
     public function datalist(string $name, array $options, array $attr = [], bool $label = true): Form
     {
@@ -478,6 +482,7 @@ class Form
      * @param array  $options
      * @param array  $attr
      * @param bool   $label
+     * @param bool   $use_key_as_value
      * @return Form
      */
     public function select(
@@ -503,11 +508,11 @@ class Form
         }
 
         $this->buffer[] = $attr + [
-                'name'    => $name,
-                'tag'     => 'select',
-                'options' => [$options, $selected, $disabled, $use_key_as_value],
-                'l'       => $label
-            ];
+            'name'    => $name,
+            'tag'     => 'select',
+            'options' => [$options, $selected, $disabled, $use_key_as_value],
+            'l'       => $label
+        ];
 
         return $this;
     }
@@ -674,11 +679,28 @@ class Form
      * Adds short replacement for HTML attributes.
      *
      * @param array $array
-     * @return \Form
+     * @return Form
      */
     public function shortTags(array $array): Form
     {
         $this->shorts = $array;
+
+        return $this;
+    }
+
+    /**
+     * Repeats a set of methods for a giving multiplier.
+     *
+     * @param int      $multiplier
+     * @param \Closure $repeat
+     * @return Form
+     */
+    public function repeatable(int $multiplier, Closure $repeat): Form
+    {
+        while ($multiplier--)
+        {
+            $repeat($this);
+        }
 
         return $this;
     }
@@ -702,10 +724,11 @@ class Form
             }
 
             $attr .= "\n\t<option value=\"{$val}\"";
-            if ($selected == $val)
+            if ($selected === $val)
             {
                 $attr .= ' selected';
             }
+
             if (in_array($val, $disabled))
             {
                 $attr .= ' disabled';
@@ -714,6 +737,47 @@ class Form
         }
 
         return "{$attr}\n";
+    }
+
+
+    /**
+     * Extracts value from persistent post.
+     *
+     * @param string $name
+     * @param mixed  $value A reference to new value.
+     * @return bool         false if name does not exist in post array
+     */
+    private function extractValue(string $name, &$value)
+    {
+        $nesting = 0;
+        if (preg_match('/(\w+)(\[.*\])/', $name, $matches))
+        {
+            $name    = $matches[1];
+            $nesting = strlen($matches[2]);
+        }
+
+        if (isset($this->post[$name]))
+        {
+            if ($nesting == 2)
+            {
+                $value = array_shift($this->post[$name]);
+            }
+            elseif ($nesting == 4)
+            {
+                foreach ($this->post[$name] as $key => $value)
+                {
+                    $value = array_shift($this->post[$name][$key]);
+                }
+            }
+            else
+            {
+                $value = $this->post[$name];
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
 
@@ -729,10 +793,9 @@ class Form
         $attr = '';
         if ($val && ! $this->val && isset($attributes['name']))
         {
-            $name = $attributes['name'];
-            if (isset($this->post[$name]))
+            $value = '';
+            if ($this->extractValue($attributes['name'], $value))
             {
-                $value = $this->post[$name];
                 $typed = isset($attributes['type']);
                 if ($typed && $attributes['type'] == 'radio')
                 {
@@ -798,7 +861,8 @@ class Form
      *
      * @param string   $before
      * @param int|null $index
-     * @return \Bittr\Form
+     * @return Form
+     * @throws \Exception
      */
     public function move(string $before = null, int $index = null): Form
     {
@@ -812,6 +876,11 @@ class Form
                     break;
                 }
             }
+        }
+
+        if (! $index || ! isset($this->buffer[$index]))
+        {
+            throw new Exception('Invalid move index');
         }
 
         $last = array_pop($this->buffer);
@@ -851,65 +920,73 @@ class Form
      */
     public function __toString(): string
     {
-        $form = '';
-        $this->val = empty($this->post);
-
-        foreach ($this->buffer as $el)
+        try
         {
-            if (! empty($el['l']))
-            {
-                unset($el['l']);
-                $name = str_replace(['[', ']'], '', $el['name']);
-                $label = implode(' ', array_map('ucfirst', explode('_', $name)));
-                $form .= "<label>{$label}</label>";
-            }
+            $form = '';
+            $this->val = empty($this->post);
 
-            if (! isset($el['tag']))
+            foreach ($this->buffer as $el)
             {
-                $form .= "<input{$this->makeAttr($el)}/>\n";
-            }
-            elseif ($el['tag'] == 'select' || $el['tag'] == 'datalist')
-            {
-                $opts = $el['options'];
-                $tag = $el['tag'];
-                unset($el['tag'], $el['options']);
-                if (isset($el['name']) && ! $this->val && isset($this->post[$el['name']]))
+                if (! empty($el['l']))
                 {
-                    $opts[1] = $this->post[$el['name']];
+                    unset($el['l']);
+                    $name = str_replace(['[', ']'], '', $el['name']);
+                    $label = implode(' ', array_map('ucfirst', explode('_', $name)));
+                    $form .= "<label>{$label}</label>";
                 }
 
-                $form .= "<{$tag}{$this->makeAttr($el, false)}>{$this->makeOpt($opts)}</{$tag}>\n";
-            }
-            elseif (isset($el['content']))
-            {
-                $tag = $el['tag'];
-                $cont = $el['content'];
-                unset($el['tag'], $el['content']);
-                if (isset($el['name']) && ! $this->val && isset($this->post[$el['name']]))
+                if (! isset($el['tag']))
                 {
-                    $cont = $this->post[$el['name']];
+                    $form .= "<input{$this->makeAttr($el)}/>\n";
                 }
+                elseif ($el['tag'] == 'select' || $el['tag'] == 'datalist')
+                {
+                    $opts = $el['options'];
+                    $tag  = $el['tag'];
+                    unset($el['tag'], $el['options']);
 
-                $form .= "<{$tag}{$this->makeAttr($el, false)}>{$cont}</{$tag}>\n";
+                    if (isset($el['name']) && ! $this->val)
+                    {
+                        $this->extractValue($el['name'], $opts[1]);
+                    }
+
+                    $form .= "<{$tag}{$this->makeAttr($el, false)}>{$this->makeOpt($opts)}</{$tag}>\n";
+                }
+                elseif (isset($el['content']))
+                {
+                    $tag = $el['tag'];
+                    $cont = $el['content'];
+                    unset($el['tag'], $el['content']);
+                    if (isset($el['name']) && ! $this->val && isset($this->post[$el['name']]))
+                    {
+                        $cont = $this->post[$el['name']];
+                    }
+
+                    $form .= "<{$tag}{$this->makeAttr($el, false)}>{$cont}</{$tag}>\n";
+                }
+                elseif ($el['tag'] == 'raw')
+                {
+                    $form .= "{$el[0]}\n";
+                }
+                else
+                {
+                    $tag = $el['tag'];
+                    unset($el['tag']);
+                    $form .= "<{$tag}{$this->makeAttr($el)} />\n";
+                }
             }
-            elseif ($el['tag'] == 'raw')
+
+            if (isset($this->form))
             {
-                $form .= "{$el[0]}\n";
+                $form = "<form{$this->makeAttr($this->form)}>{$form}</form>";
             }
-            else
-            {
-                $tag = $el['tag'];
-                unset($el['tag']);
-                $form .= "<{$tag}{$this->makeAttr($el)} />\n";
-            }
+            unset($this->buffer);
+
+            return $form;
         }
-
-        if (isset($this->form))
+        catch (Throwable $throwable)
         {
-            $form = "<form{$this->makeAttr($this->form)}>{$form}</form>";
+            return $throwable->__toString();
         }
-        unset($this->buffer);
-
-        return $form;
     }
 }
